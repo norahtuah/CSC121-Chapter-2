@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSC121 Topic 2 Interactive Classroom</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#172033;--muted:#667085;--brand:#4a4f86;--accent:#ea9800;--ok:#157347;--bad:#b42318;--line:#e5e7eb}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,var(--brand),#272b55);color:white;padding:28px 18px}
+.wrap{max-width:1100px;margin:auto}.sub{opacity:.9;max-width:850px;line-height:1.5}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.tab{border:0;border-radius:999px;padding:10px 14px;cursor:pointer;background:#fff;color:#252a55;font-weight:700}.tab.active{background:var(--accent);color:#111}
+main{max-width:1100px;margin:20px auto;padding:0 16px 50px}.panel{display:none}.panel.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 4px 14px #0000000b}
+h1,h2,h3{margin-top:0}.badge{display:inline-block;background:#fff3d6;color:#7a4a00;padding:5px 9px;border-radius:999px;font-size:13px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.btn{border:0;border-radius:10px;padding:11px 14px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer}.btn.alt{background:var(--accent);color:#111}.btn.ghost{background:#eef0f8;color:#272b55}
+input,select,textarea{width:100%;padding:10px;border:1px solid #cfd4dc;border-radius:9px;margin:5px 0 10px;font-size:15px}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;padding:11px;border:1px solid #d7dae2;border-radius:10px;background:#fff;cursor:pointer}.choice.good{border-color:#77b895;background:#edf9f1}.choice.bad{border-color:#e5a19b;background:#fff0ef}
+.feedback{margin-top:10px;font-weight:700}.ok{color:var(--ok)}.badtext{color:var(--bad)}
+.step{padding:10px;border:1px solid var(--line);border-radius:10px;margin:7px 0;background:#fafafa;cursor:pointer}
+.flow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-weight:700}.node{padding:10px 13px;border:2px solid var(--brand);background:white}.oval{border-radius:999px}.rect{border-radius:5px}.diamond{transform:rotate(45deg);width:80px;height:80px;display:flex;align-items:center;justify-content:center;margin:20px}.diamond span{transform:rotate(-45deg);font-size:12px;text-align:center}.io{transform:skew(-12deg);border-radius:4px}.io span{display:block;transform:skew(12deg)}.arrow{font-size:24px}
+.scorebox{position:sticky;top:8px;z-index:2;float:right;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:700}
+.small{font-size:13px;color:var(--muted)} table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--line);padding:9px;text-align:left}th{background:#f1f2f7}
+footer{text-align:center;color:var(--muted);padding:20px}.hide{display:none}
+@media(max-width:650px){header{padding:20px 14px}.scorebox{float:none;position:static;margin-bottom:10px}.diamond{margin:18px}}
+
+.progress{height:10px;background:#e8eaf1;border-radius:999px;overflow:hidden;margin-top:7px}
+.progress span{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+</style>
+</head>
+<body>
+
+<div id="loginOverlay" style="position:fixed;inset:0;background:#f6f7fb;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:520px;width:100%">
+    <span class="badge">CSC121 • Topic 2</span>
+    <h2 style="margin-top:12px">Student Learning Session</h2>
+    <p>Enter your details before starting. Your activity progress can be recorded in the lecturer's Google Sheet when the lecturer configures the Apps Script URL.</p>
+    <label>Student Name</label><input id="studentName" autocomplete="name" placeholder="Enter full name">
+    <label>Student ID</label><input id="studentId" placeholder="Enter student ID">
+    <button class="btn alt" onclick="startStudent()">START LEARNING</button>
+    <div id="loginFb" class="feedback"></div>
+  </div>
+</div>
+
+<header><div class="wrap">
+<span class="badge">CSC121 • Topic 2</span>
+<h1>Problem-Solving & Algorithm Design</h1>
+<p class="sub">Interactive Classroom Edition — built around the lecture progression: problems and problem-solving → program development life cycle → problem analysis (Input–Process–Output) → algorithms → pseudocode and flowcharts → sequence, selection and repetition.</p>
+<nav>
+<button class="tab active" data-p="home">Home</button>
+<button class="tab" data-p="week1">Week 1</button>
+<button class="tab" data-p="week2">Week 2</button>
+<button class="tab" data-p="challenge">Final Challenge</button>
+<button class="tab" data-p="lecturer">Lecturer Mode</button>
+</nav></div></header>
+
+
+<div id="studentBar" class="card" style="max-width:1100px;margin:14px auto 0;display:none">
+  <div class="grid">
+    <div><b id="studentLabel">Student</b><div class="small">Current learning session</div></div>
+    <div><b>Week 1</b><div class="progress"><span id="progW1"></span></div><small id="progW1Text">0%</small></div>
+    <div><b>Week 2</b><div class="progress"><span id="progW2"></span></div><small id="progW2Text">0%</small></div>
+    <div><b>Challenge</b><div class="progress"><span id="progCh"></span></div><small id="progChText">0%</small></div>
+  </div>
+</div>
+
+<main>
+<div class="scorebox">Score: <span id="score">0</span></div>
+
+<section id="home" class="panel active">
+<div class="card"><h2>How to use this app</h2>
+<div class="grid">
+<div><h3>Week 1</h3><p>Understand problems, PDLC, IPO and algorithm sequencing.</p><button class="btn jump" data-to="week1">Start Week 1</button></div>
+<div><h3>Week 2</h3><p>Represent solutions with pseudocode, flowcharts and control structures.</p><button class="btn jump" data-to="week2">Start Week 2</button></div>
+<div><h3>Final Challenge</h3><p>Combine IPO, pseudocode and decision logic in one student-result problem.</p><button class="btn alt jump" data-to="challenge">Open Challenge</button></div>
+</div></div>
+<div class="card"><h3>Suggested classroom setup</h3><p>Use 14 groups of 5 students. Project the app for whole-class activities, or let groups open it on phones/laptops. Activities are short enough to alternate with your lecture slides.</p></div>
+</section>
+
+<section id="week1" class="panel">
+<div class="card"><span class="badge">Activity 1</span><h2>Program the Robot</h2>
+<p>Put these tea-making instructions into a sensible order by clicking them in sequence.</p>
+<div id="teaPool"></div><p><b>Your algorithm:</b></p><div id="teaAns"></div>
+<button class="btn" onclick="checkTea()">Check order</button> <button class="btn ghost" onclick="resetTea()">Reset</button><div id="teaFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">Activity 2</span><h2>PDLC Card Race</h2>
+<p>Click the stages in the correct program development order.</p><div id="pdlcPool"></div><p><b>Your order:</b></p><div id="pdlcAns"></div>
+<button class="btn" onclick="checkPDLC()">Check</button> <button class="btn ghost" onclick="resetPDLC()">Reset</button><div id="pdlcFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">Activity 3</span><h2>IPO Detective</h2>
+<p><b>Problem:</b> Calculate the average of three test marks.</p>
+<label>Input</label><input id="ipoI" placeholder="e.g. ...">
+<label>Process</label><input id="ipoP" placeholder="e.g. ...">
+<label>Output</label><input id="ipoO" placeholder="e.g. ...">
+<button class="btn" onclick="checkIPO()">Check my IPO</button><div id="ipoFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">Activity 4</span><h2>Be the Computer</h2>
+<p>Trace this algorithm: <b>INPUT X → Y = X × 2 → Y = Y + 5 → OUTPUT Y</b></p>
+<label>Choose X</label><select id="traceX"><option>2</option><option>5</option><option>10</option><option>0</option><option>-3</option></select>
+<label>What is Y?</label><input id="traceY" type="number">
+<button class="btn" onclick="checkTrace()">Run mentally</button><div id="traceFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">New Activity 1</span><h2>Problem or Solution?</h2>
+<p>Classify the statement before discussing why.</p><p><b>“A student needs to calculate the average of three tests.”</b></p><button class="choice" onclick="actMC(this,true,'nw1fb1')">Problem</button><button class="choice" onclick="actMC(this,false,'nw1fb1')">Solution</button><div id="nw1fb1" class="feedback" data-explain="This describes a need to be resolved, so it is the problem."></div></div>
+<div class="card"><span class="badge">New Activity 2</span><h2>Knowledge-Lean vs Knowledge-Rich</h2>
+<p>Decide what kind of knowledge the task requires.</p><p><b>Which is knowledge-rich?</b></p><button class="choice" onclick="actMC(this,false,'nw1fb2')">Finding a parking space</button><button class="choice" onclick="actMC(this,true,'nw1fb2')">Computer programming problem</button><div id="nw1fb2" class="feedback" data-explain="Programming requires specific knowledge or skill."></div></div>
+<div class="card"><span class="badge">New Activity 3</span><h2>Simple vs Complex Problem</h2>
+<p>Compare the complexity of two real-world tasks.</p><p><b>Which is the more complex problem?</b></p><button class="choice" onclick="actMC(this,false,'nw1fb3')">Switching on a lamp</button><button class="choice" onclick="actMC(this,true,'nw1fb3')">Traffic-light control</button><div id="nw1fb3" class="feedback" data-explain="Traffic-light control involves multiple conditions and coordinated decisions."></div></div>
+<div class="card"><span class="badge">New Activity 4</span><h2>Find the Missing PDLC Stage</h2>
+<p>Complete the development sequence.</p><p><b>Problem Analysis → Algorithm Design → ? → Testing & Debugging → Maintenance</b></p><button class="choice" onclick="actMC(this,true,'nw1fb4')">Algorithm Implementation</button><button class="choice" onclick="actMC(this,false,'nw1fb4')">Problem Definition</button><button class="choice" onclick="actMC(this,false,'nw1fb4')">Output</button><div id="nw1fb4" class="feedback" data-explain="Implementation follows algorithm design."></div></div>
+<div class="card"><span class="badge">New Activity 5</span><h2>PDLC Scenario Match</h2>
+<p>Match a real development action to its phase.</p><p><b>A programmer executes sample data to see whether results are correct. Which phase?</b></p><button class="choice" onclick="actMC(this,false,'nw1fb5')">Problem Analysis</button><button class="choice" onclick="actMC(this,true,'nw1fb5')">Testing & Debugging</button><button class="choice" onclick="actMC(this,false,'nw1fb5')">Maintenance</button><div id="nw1fb5" class="feedback" data-explain="Testing uses sample data to validate program logic."></div></div>
+<div class="card"><span class="badge">New Activity 6</span><h2>Input Hunter</h2>
+<p>Identify raw data required by a problem.</p><p><b>For rectangle area, what are the inputs?</b></p><button class="choice" onclick="actMC(this,false,'nw1fb6')">Area only</button><button class="choice" onclick="actMC(this,true,'nw1fb6')">Length and width</button><button class="choice" onclick="actMC(this,false,'nw1fb6')">length × width</button><div id="nw1fb6" class="feedback" data-explain="Length and width are supplied to the calculation."></div></div>
+<div class="card"><span class="badge">New Activity 7</span><h2>Process Hunter</h2>
+<p>Identify the operation performed on inputs.</p><p><b>For a rectangle-area problem, what is the process?</b></p><button class="choice" onclick="actMC(this,false,'nw1fb7')">Input length</button><button class="choice" onclick="actMC(this,true,'nw1fb7')">area = length × width</button><button class="choice" onclick="actMC(this,false,'nw1fb7')">Display area</button><div id="nw1fb7" class="feedback" data-explain="The process is the calculation."></div></div>
+<div class="card"><span class="badge">New Activity 8</span><h2>Output Hunter</h2>
+<p>Identify the information produced.</p><p><b>For the three-test average problem, what is the output?</b></p><button class="choice" onclick="actMC(this,false,'nw1fb8')">Three test marks</button><button class="choice" onclick="actMC(this,true,'nw1fb8')">Average mark</button><button class="choice" onclick="actMC(this,false,'nw1fb8')">Add the marks</button><div id="nw1fb8" class="feedback" data-explain="The resulting average is the output information."></div></div>
+<div class="card"><span class="badge">New Activity 9</span><h2>Algorithm Order Detective</h2>
+<p>Choose the logically valid sequence.</p><p><b>Which order is correct?</b></p><button class="choice" onclick="actMC(this,true,'nw1fb9')">START → INPUT → PROCESS → OUTPUT → END</button><button class="choice" onclick="actMC(this,false,'nw1fb9')">START → OUTPUT → INPUT → PROCESS → END</button><div id="nw1fb9" class="feedback" data-explain="Input must be available before it can be processed and output."></div></div>
+<div class="card"><span class="badge">New Activity 10</span><h2>Break It Down</h2>
+<p>Apply decomposition to a complex problem.</p><p><b>If a problem is too complex during algorithm design, what should you do?</b></p><button class="choice" onclick="actMC(this,false,'nw1fb10')">Skip it</button><button class="choice" onclick="actMC(this,true,'nw1fb10')">Break it into sub-problems</button><button class="choice" onclick="actMC(this,false,'nw1fb10')">Start coding immediately</button><div id="nw1fb10" class="feedback" data-explain="The slides recommend solving manageable sub-problems and combining their solutions."></div></div>
+</section>
+
+<section id="week2" class="panel">
+<div class="card"><span class="badge">Activity 5</span><h2>Flowchart Symbol Detective</h2>
+<p>Which symbol should represent <b>“mark ≥ 50?”</b></p>
+<button class="choice" onclick="mc(this,false,'symFb')">Rectangle — Process</button>
+<button class="choice" onclick="mc(this,false,'symFb')">Parallelogram — Input/Output</button>
+<button class="choice" onclick="mc(this,true,'symFb')">Diamond — Decision</button>
+<button class="choice" onclick="mc(this,false,'symFb')">Oval — Start/End</button><div id="symFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">Activity 6</span><h2>Which Structure?</h2>
+<p id="structQ"></p><div id="structChoices"></div><button class="btn ghost" onclick="nextStruct()">Next scenario</button><div id="structFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">Activity 7</span><h2>Debug the Algorithm</h2>
+<p>The following algorithm runs, but its result labels are wrong:</p>
+<pre>INPUT mark
+IF mark &gt;= 50 THEN
+    OUTPUT "FAIL"
+ELSE
+    OUTPUT "PASS"
+END IF</pre>
+<p>What kind of error is this?</p>
+<button class="choice" onclick="mc(this,false,'bugFb')">Syntax error</button>
+<button class="choice" onclick="mc(this,true,'bugFb')">Logical error</button>
+<button class="choice" onclick="mc(this,false,'bugFb')">Input error</button><div id="bugFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">Activity 8</span><h2>Human Flowchart Simulator</h2>
+<label>Enter a mark</label><input id="mark" type="number" min="0" max="100" value="75">
+<button class="btn" onclick="runFlow()">Run flowchart</button>
+<div class="flow" style="margin-top:15px">
+<div class="node oval">START</div><div class="arrow">→</div><div class="node io"><span>INPUT mark</span></div><div class="arrow">→</div>
+<div class="node diamond"><span>mark ≥ 50?</span></div><div class="arrow">→</div><div id="flowResult" class="node rect">?</div><div class="arrow">→</div><div class="node oval">END</div>
+</div><div id="flowFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">New Activity 1</span><h2>Symbol Match: Start/End</h2>
+<p>Choose the correct flowchart symbol.</p><p><b>START and END use which symbol?</b></p><button class="choice" onclick="actMC(this,true,'nw2fb1')">Oval / Terminator</button><button class="choice" onclick="actMC(this,false,'nw2fb1')">Diamond</button><button class="choice" onclick="actMC(this,false,'nw2fb1')">Rectangle</button><div id="nw2fb1" class="feedback" data-explain="The terminator symbol represents START and END."></div></div>
+<div class="card"><span class="badge">New Activity 2</span><h2>Symbol Match: Input/Output</h2>
+<p>Choose the correct flowchart symbol.</p><p><b>INPUT mark uses which symbol?</b></p><button class="choice" onclick="actMC(this,false,'nw2fb2')">Rectangle</button><button class="choice" onclick="actMC(this,true,'nw2fb2')">Parallelogram</button><button class="choice" onclick="actMC(this,false,'nw2fb2')">Diamond</button><div id="nw2fb2" class="feedback" data-explain="Input and output use a parallelogram."></div></div>
+<div class="card"><span class="badge">New Activity 3</span><h2>Symbol Match: Process</h2>
+<p>Choose the correct flowchart symbol.</p><p><b>average = total / 3 uses which symbol?</b></p><button class="choice" onclick="actMC(this,true,'nw2fb3')">Rectangle</button><button class="choice" onclick="actMC(this,false,'nw2fb3')">Oval</button><button class="choice" onclick="actMC(this,false,'nw2fb3')">Diamond</button><div id="nw2fb3" class="feedback" data-explain="A calculation/process uses a rectangle."></div></div>
+<div class="card"><span class="badge">New Activity 4</span><h2>Symbol Match: Decision</h2>
+<p>Choose the correct flowchart symbol.</p><p><b>mark ≥ 50? uses which symbol?</b></p><button class="choice" onclick="actMC(this,false,'nw2fb4')">Parallelogram</button><button class="choice" onclick="actMC(this,true,'nw2fb4')">Diamond</button><button class="choice" onclick="actMC(this,false,'nw2fb4')">Oval</button><div id="nw2fb4" class="feedback" data-explain="A condition or decision uses a diamond."></div></div>
+<div class="card"><span class="badge">New Activity 5</span><h2>Sequence Spotter</h2>
+<p>Identify the control structure.</p><p><b>Input length → calculate area → display area.</b></p><button class="choice" onclick="actMC(this,true,'nw2fb5')">Sequence</button><button class="choice" onclick="actMC(this,false,'nw2fb5')">Selection</button><button class="choice" onclick="actMC(this,false,'nw2fb5')">Repetition</button><div id="nw2fb5" class="feedback" data-explain="The steps run once in order with no branch or loop."></div></div>
+<div class="card"><span class="badge">New Activity 6</span><h2>Selection Spotter</h2>
+<p>Identify the control structure.</p><p><b>IF mark ≥ 50 THEN PASS ELSE FAIL.</b></p><button class="choice" onclick="actMC(this,false,'nw2fb6')">Sequence</button><button class="choice" onclick="actMC(this,true,'nw2fb6')">Selection</button><button class="choice" onclick="actMC(this,false,'nw2fb6')">Repetition</button><div id="nw2fb6" class="feedback" data-explain="A condition selects one of two paths."></div></div>
+<div class="card"><span class="badge">New Activity 7</span><h2>Repetition Spotter</h2>
+<p>Identify the control structure.</p><p><b>Display numbers 1 to 10 repeatedly.</b></p><button class="choice" onclick="actMC(this,false,'nw2fb7')">Selection</button><button class="choice" onclick="actMC(this,true,'nw2fb7')">Repetition</button><button class="choice" onclick="actMC(this,false,'nw2fb7')">Sequence</button><div id="nw2fb7" class="feedback" data-explain="The action is repeated."></div></div>
+<div class="card"><span class="badge">New Activity 8</span><h2>Trace a Decision</h2>
+<p>Predict the path through an IF statement.</p><p><b>IF num > 0 → Positive; ELSE IF num < 0 → Negative; ELSE → Zero. num = -4.</b></p><button class="choice" onclick="actMC(this,false,'nw2fb8')">Positive</button><button class="choice" onclick="actMC(this,true,'nw2fb8')">Negative</button><button class="choice" onclick="actMC(this,false,'nw2fb8')">Zero</button><div id="nw2fb8" class="feedback" data-explain="-4 satisfies num < 0."></div></div>
+<div class="card"><span class="badge">New Activity 9</span><h2>Debug the Logic</h2>
+<p>Recognize an error that still allows execution.</p><p><b>A program displays FAIL for mark 80 even though the rule is mark ≥ 50 → PASS. What error?</b></p><button class="choice" onclick="actMC(this,false,'nw2fb9')">Syntax error</button><button class="choice" onclick="actMC(this,true,'nw2fb9')">Logical error</button><button class="choice" onclick="actMC(this,false,'nw2fb9')">No error</button><div id="nw2fb9" class="feedback" data-explain="The program may run, but the logic/result is wrong."></div></div>
+<div class="card"><span class="badge">New Activity 10</span><h2>Finite Algorithm</h2>
+<p>Check an algorithm characteristic.</p><p><b>Which algorithm characteristic requires execution to eventually stop?</b></p><button class="choice" onclick="actMC(this,true,'nw2fb10')">Finite</button><button class="choice" onclick="actMC(this,false,'nw2fb10')">Ambiguous</button><button class="choice" onclick="actMC(this,false,'nw2fb10')">Repetitive</button><div id="nw2fb10" class="feedback" data-explain="A valid algorithm must terminate in finite time."></div></div>
+</section>
+
+<section id="challenge" class="panel">
+<div class="card"><span class="badge">Final Challenge</span><h2>Student Result System</h2>
+<p>A program accepts three test marks, calculates the average, and displays <b>PASS</b> when average ≥ 50; otherwise <b>FAIL</b>.</p>
+<div class="grid"><div><label>Test 1</label><input id="t1" type="number" value="80"></div><div><label>Test 2</label><input id="t2" type="number" value="70"></div><div><label>Test 3</label><input id="t3" type="number" value="60"></div></div>
+<button class="btn alt" onclick="runFinal()">Run the algorithm</button>
+<div id="finalOut" class="card hide"></div>
+<h3>Complete the pseudocode</h3>
+<pre>START
+INPUT test1, test2, test3
+average = (test1 + test2 + test3) / <input id="blank1" style="width:60px;display:inline" aria-label="blank one">
+IF average <select id="blank2" style="width:90px;display:inline"><option value="">?</option><option>&gt;=</option><option>&lt;</option><option>==</option></select> 50 THEN
+    OUTPUT average, "<input id="blank3" style="width:90px;display:inline" aria-label="blank three">"
+ELSE
+    OUTPUT average, "FAIL"
+END IF
+END</pre>
+<button class="btn" onclick="checkPseudo()">Check pseudocode</button><div id="pseudoFb" class="feedback"></div></div>
+
+<div class="card"><span class="badge">New Activity 1</span><h2>IPO Master</h2>
+<p>Choose the complete IPO mapping.</p><p><b>Calculate average of 3 marks.</b></p><button class="choice" onclick="actMC(this,true,'nchfb1')">Input: marks; Process: sum/3; Output: average</button><button class="choice" onclick="actMC(this,false,'nchfb1')">Input: average; Process: marks; Output: formula</button><div id="nchfb1" class="feedback" data-explain="The marks are inputs, the formula processes them, and average is output."></div></div>
+<div class="card"><span class="badge">New Activity 2</span><h2>Trace Challenge</h2>
+<p>Execute the algorithm mentally.</p><p><b>X=6; Y=X×2; Y=Y+5. What is Y?</b></p><button class="choice" onclick="actMC(this,false,'nchfb2')">12</button><button class="choice" onclick="actMC(this,true,'nchfb2')">17</button><button class="choice" onclick="actMC(this,false,'nchfb2')">22</button><div id="nchfb2" class="feedback" data-explain="6×2=12, then 12+5=17."></div></div>
+<div class="card"><span class="badge">New Activity 3</span><h2>Boundary Test</h2>
+<p>Test the exact decision boundary.</p><p><b>Rule: average ≥ 50 → PASS. average = 50.</b></p><button class="choice" onclick="actMC(this,true,'nchfb3')">PASS</button><button class="choice" onclick="actMC(this,false,'nchfb3')">FAIL</button><button class="choice" onclick="actMC(this,false,'nchfb3')">No output</button><div id="nchfb3" class="feedback" data-explain="≥ includes the boundary value 50."></div></div>
+<div class="card"><span class="badge">New Activity 4</span><h2>Negative/Zero/Positive</h2>
+<p>Trace a three-way selection.</p><p><b>num = 0. What should be displayed?</b></p><button class="choice" onclick="actMC(this,false,'nchfb4')">Positive</button><button class="choice" onclick="actMC(this,false,'nchfb4')">Negative</button><button class="choice" onclick="actMC(this,true,'nchfb4')">Zero</button><div id="nchfb4" class="feedback" data-explain="Zero is neither greater than nor less than zero."></div></div>
+<div class="card"><span class="badge">New Activity 5</span><h2>Fix the Average</h2>
+<p>Choose the correct expression.</p><p><b>Which correctly calculates the mean of three marks?</b></p><button class="choice" onclick="actMC(this,false,'nchfb5')">m1 + m2 + m3 / 3</button><button class="choice" onclick="actMC(this,true,'nchfb5')">(m1 + m2 + m3) / 3</button><button class="choice" onclick="actMC(this,false,'nchfb5')">m1 + m2 + (m3*3)</button><div id="nchfb5" class="feedback" data-explain="Parentheses ensure the sum of all three marks is divided by 3."></div></div>
+<div class="card"><span class="badge">New Activity 6</span><h2>Choose the Structure</h2>
+<p>Apply control structures to a realistic case.</p><p><b>Keep asking for a password until it is correct.</b></p><button class="choice" onclick="actMC(this,false,'nchfb6')">Sequence only</button><button class="choice" onclick="actMC(this,false,'nchfb6')">Selection only</button><button class="choice" onclick="actMC(this,true,'nchfb6')">Repetition with a condition</button><div id="nchfb6" class="feedback" data-explain="The check/input cycle repeats until the condition is satisfied."></div></div>
+<div class="card"><span class="badge">New Activity 7</span><h2>Flowchart Translation</h2>
+<p>Translate pseudocode to a symbol.</p><p><b>IF total > 100 THEN discount = 10%. Which symbol contains total > 100?</b></p><button class="choice" onclick="actMC(this,false,'nchfb7')">Rectangle</button><button class="choice" onclick="actMC(this,true,'nchfb7')">Diamond</button><button class="choice" onclick="actMC(this,false,'nchfb7')">Parallelogram</button><div id="nchfb7" class="feedback" data-explain="The condition belongs in a decision diamond."></div></div>
+<div class="card"><span class="badge">New Activity 8</span><h2>Test Case Designer</h2>
+<p>Choose a useful pair of tests for PASS/FAIL at 50.</p><p><b>Which pair best checks both sides of the boundary?</b></p><button class="choice" onclick="actMC(this,false,'nchfb8')">80 and 90</button><button class="choice" onclick="actMC(this,true,'nchfb8')">49 and 50</button><button class="choice" onclick="actMC(this,false,'nchfb8')">10 and 20</button><div id="nchfb8" class="feedback" data-explain="49 tests below the boundary and 50 tests the inclusive boundary."></div></div>
+<div class="card"><span class="badge">New Activity 9</span><h2>Find the Wrong Stage</h2>
+<p>Apply PDLC reasoning.</p><p><b>The requirements change after deployment. Which stage handles necessary changes?</b></p><button class="choice" onclick="actMC(this,false,'nchfb9')">Problem Analysis only</button><button class="choice" onclick="actMC(this,true,'nchfb9')">Maintenance & Documentation</button><button class="choice" onclick="actMC(this,false,'nchfb9')">Algorithm Design only</button><div id="nchfb9" class="feedback" data-explain="Maintenance makes necessary changes to completed programs."></div></div>
+<div class="card"><span class="badge">New Activity 10</span><h2>Full Journey</h2>
+<p>Put the topic together.</p><p><b>Which learning path best represents this topic?</b></p><button class="choice" onclick="actMC(this,true,'nchfb10')">Problem → IPO → Algorithm → Pseudocode/Flowchart → Test</button><button class="choice" onclick="actMC(this,false,'nchfb10')">Code → Guess → Output</button><button class="choice" onclick="actMC(this,false,'nchfb10')">Flowchart → Ignore input → End</button><div id="nchfb10" class="feedback" data-explain="The topic progresses from understanding the problem to designing, representing and checking the solution."></div></div>
+</section>
+
+<section id="lecturer" class="panel">
+<div class="card"><h2>Lecturer Mode</h2><p>Suggested pacing for a 70-student class:</p>
+<table><tr><th>Session</th><th>Use in class</th><th>Approx.</th></tr>
+<tr><td>Week 1</td><td>Program the Robot → PDLC Race → IPO Detective → Be the Computer</td><td>45–55 min of active work</td></tr>
+<tr><td>Week 2</td><td>Symbol Detective → Which Structure? → Debugging → Human Flowchart</td><td>45–55 min of active work</td></tr>
+<tr><td>End Week 2</td><td>Student Result System final challenge</td><td>20–25 min</td></tr></table>
+<p class="small">Tip: alternate 10–15 minutes of explanation with one activity. For group competition, keep 14 groups × 5 students and record the app score or award points for explanations.</p>
+<button class="btn ghost" onclick="resetScore()">Reset score</button></div>
+</section>
+</main>
+<footer>CSC121 Topic 2 • Interactive Classroom Edition</footer>
+<script>
+let score=0; const $=id=>document.getElementById(id);
+function add(n){score+=n;$('score').textContent=score}
+function show(id){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.p===id));window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.p));document.querySelectorAll('.jump').forEach(b=>b.onclick=()=>show(b.dataset.to));
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function clickable(pool,ans,items){$(pool).innerHTML='';$(ans).innerHTML='';shuffle(items).forEach(x=>{let d=document.createElement('div');d.className='step';d.textContent=x;d.onclick=()=>{$(ans).appendChild(d);};$(pool).appendChild(d)})}
+const tea=['Put a teabag into a cup','Pour boiled water into the cup','Add sugar and milk','Stir'];
+function resetTea(){clickable('teaPool','teaAns',tea);$('teaFb').textContent=''}
+function checkTea(){let a=[...$('teaAns').children].map(x=>x.textContent);let ok=JSON.stringify(a)===JSON.stringify(tea);$('teaFb').innerHTML=ok?'<span class="ok">Correct — clear order matters in an algorithm. +2</span>':'<span class="badtext">Not yet. Think about what must happen first.</span>';if(ok&&!$('teaFb').dataset.done){add(2);$('teaFb').dataset.done=1;trackFeedback('teaFb',true,2)}}
+const pdlc=['Problem Analysis','Algorithm Design','Algorithm Implementation','Program Testing & Debugging','Program Maintenance & Documentation'];
+function resetPDLC(){clickable('pdlcPool','pdlcAns',pdlc);$('pdlcFb').textContent=''}
+function checkPDLC(){let a=[...$('pdlcAns').children].map(x=>x.textContent);let ok=JSON.stringify(a)===JSON.stringify(pdlc);$('pdlcFb').innerHTML=ok?'<span class="ok">Correct PDLC sequence. +3</span>':'<span class="badtext">Try again: understand the problem before designing and implementing.</span>';if(ok&&!$('pdlcFb').dataset.done){add(3);$('pdlcFb').dataset.done=1;trackFeedback('pdlcFb',true,3)}}
+function checkIPO(){let i=$('ipoI').value.toLowerCase(),p=$('ipoP').value.toLowerCase(),o=$('ipoO').value.toLowerCase();let okI=(i.includes('test')||i.includes('mark'))&&(/[123]|three|3/.test(i));let okP=p.includes('3')&&(p.includes('+')||p.includes('average')||p.includes('sum'));let okO=o.includes('average');let n=[okI,okP,okO].filter(Boolean).length;$('ipoFb').innerHTML=`${n}/3 parts recognized. `+(n===3?'<span class="ok">Excellent. +3</span>':'<span class="badtext">Expected: three test marks → add and divide by 3 → average mark.</span>');if(n===3&&!$('ipoFb').dataset.done){add(3);$('ipoFb').dataset.done=1;trackFeedback('ipoFb',true,3)}}
+function checkTrace(){let x=+$('traceX').value,y=+$('traceY').value,ans=x*2+5,ok=y===ans;$('traceFb').innerHTML=ok?`<span class="ok">Correct: Y = ${ans}. +2</span>`:`<span class="badtext">Trace one statement at a time. Expected ${ans}.</span>`;if(ok&&!$('traceFb').dataset.done){add(2);$('traceFb').dataset.done=1;trackFeedback('traceFb',true,2)}}
+function mc(btn,ok,fb){btn.parentElement.querySelectorAll('.choice').forEach(x=>x.classList.remove('good','bad'));btn.classList.add(ok?'good':'bad');$(fb).innerHTML=ok?'<span class="ok">Correct. +1</span>':'<span class="badtext">Try another answer.</span>';if(ok&&!$(fb).dataset.done){add(1);$(fb).dataset.done=1;trackFeedback(fb,true,1)}}
+const structs=[['Calculate the area of a rectangle.','Sequence'],['Determine whether a student passes or fails.','Selection'],['Display the numbers 1 to 10.','Repetition'],['Determine whether a number is odd or even.','Selection'],['Calculate BMI from height and weight.','Sequence'],['Keep asking for a password until it is correct.','Repetition']];
+let si=0;
+function renderStruct(){let q=structs[si];$('structQ').innerHTML='<b>Scenario:</b> '+q[0];$('structChoices').innerHTML=['Sequence','Selection','Repetition'].map(x=>`<button class="choice" onclick="answerStruct(this,'${x}')">${x}</button>`).join('');$('structFb').textContent=''}
+function answerStruct(b,a){let ok=a===structs[si][1];b.classList.add(ok?'good':'bad');$('structFb').innerHTML=ok?'<span class="ok">Correct. +1</span>':'<span class="badtext">Think about whether the steps are straight-through, require a choice, or repeat.</span>';if(ok&&!b.dataset.done){add(1);b.dataset.done=1}}
+function nextStruct(){si=(si+1)%structs.length;renderStruct()}
+function runFlow(){let m=+$('mark').value,r=m>=50?'PASS':'FAIL';$('flowResult').textContent='OUTPUT '+r;markComplete('week2','flowFb','Human Flowchart Simulator','Completed',0);$('flowFb').innerHTML=`Decision path: ${m} ≥ 50 is <b>${m>=50?'TRUE':'FALSE'}</b> → <span class="ok">${r}</span>.`}
+function runFinal(){let a=[+$('t1').value,+$('t2').value,+$('t3').value];let avg=a.reduce((x,y)=>x+y,0)/3;let r=avg>=50?'PASS':'FAIL';markComplete('challenge','finalRun','Student Result System','Completed',0);$('finalOut').classList.remove('hide');$('finalOut').innerHTML=`<h3>Program output</h3><p>Average = <b>${avg.toFixed(2)}</b></p><p>Result = <b>${r}</b></p>`}
+function checkPseudo(){let ok=$('blank1').value.trim()==='3'&&$('blank2').value==='>='&&$('blank3').value.trim().toUpperCase()==='PASS';$('pseudoFb').innerHTML=ok?'<span class="ok">Complete and correct pseudocode. +5</span>':'<span class="badtext">Check the divisor, comparison operator and output for the TRUE branch.</span>';if(ok&&!$('pseudoFb').dataset.done){add(5);$('pseudoFb').dataset.done=1;trackFeedback('pseudoFb',true,5)}}
+function resetScore(){score=0;$('score').textContent=0;document.querySelectorAll('[data-done]').forEach(x=>delete x.dataset.done)}
+
+function actMC(btn,ok,fbid){
+ const fb=$(fbid);
+ if(fb.dataset.done) return;
+ const all=btn.parentElement.querySelectorAll('.choice');
+ all.forEach(x=>x.disabled=true);
+ btn.classList.add(ok?'good':'bad');
+ if(!ok){ for(const x of all){ if(x.getAttribute('onclick')?.includes(',true,')) x.classList.add('good'); } }
+ const ex=fb.dataset.explain||'';
+ fb.innerHTML=ok?'<span class="ok">Correct! +1</span> '+ex:'<span class="badtext">Not quite.</span> '+ex;
+ fb.dataset.done='1';
+ if(ok){add(1);trackFeedback(fbid,true,1);}else{trackFeedback(fbid,false,0);}
+}
+
+
+/* ===== Google Sheets progress tracking =====
+   Paste your deployed Google Apps Script Web App URL below.
+   Leave blank while testing locally.
+*/
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxirwMwEGMU7ftG7NVkzEb6eQ5-UIO_Y7Ivquly2ln8kLpOcS-05Bz-j46pDSF-BrPXsA/exec"; // Example: https://script.google.com/macros/s/XXXXX/exec
+
+let student = {name:"", id:""};
+const progressState = {week1:new Set(), week2:new Set(), challenge:new Set()};
+const totals = {week1:14, week2:14, challenge:11};
+
+function startStudent(){
+  const name=$('studentName').value.trim(), id=$('studentId').value.trim();
+  if(!name || !id){$('loginFb').innerHTML='<span class="badtext">Please enter both Student Name and Student ID.</span>';return;}
+  student={name,id};
+  localStorage.setItem('csc121_student',JSON.stringify(student));
+  $('studentLabel').textContent=name+' | '+id;
+  $('studentBar').style.display='block';
+  $('loginOverlay').style.display='none';
+  sendProgress('Session','Login','Started',0,0);
+}
+function restoreStudent(){
+  try{
+    const x=JSON.parse(localStorage.getItem('csc121_student')||'null');
+    if(x&&x.name&&x.id){student=x;$('studentLabel').textContent=x.name+' | '+x.id;$('studentBar').style.display='block';$('loginOverlay').style.display='none';}
+  }catch(e){}
+}
+function sectionFromId(id){
+  if(id.startsWith('nw1') || ['teaFb','pdlcFb','ipoFb','traceFb'].includes(id)) return 'week1';
+  if(id.startsWith('nw2') || ['symFb','structFb','bugFb','flowFb'].includes(id)) return 'week2';
+  return 'challenge';
+}
+function activityTitleFromFeedback(fb){
+  const card=fb.closest('.card');
+  const h=card?card.querySelector('h2,h3'):null;
+  return h?h.textContent.trim():'Activity';
+}
+function markComplete(section,key,title,result,points){
+  if(!progressState[section].has(key)){
+    progressState[section].add(key);
+    updateProgressBars();
+    const pct=Math.round(progressState[section].size/totals[section]*100);
+    sendProgress(section,title,result,points,pct);
+  }
+}
+function updateProgressBars(){
+  [['week1','progW1','progW1Text'],['week2','progW2','progW2Text'],['challenge','progCh','progChText']].forEach(([sec,bar,txt])=>{
+    const pct=Math.min(100,Math.round(progressState[sec].size/totals[sec]*100));
+    $(bar).style.width=pct+'%';$(txt).textContent=pct+'%';
+  });
+}
+function sendProgress(section,activity,result,points,progress){
+  if(!GOOGLE_SCRIPT_URL || !student.name || !student.id) return;
+  const payload={
+    course:'CSC121', topic:'Topic 2 - Problem-Solving and Algorithm Design',
+    studentName:student.name, studentId:student.id, section, activity, result,
+    points:Number(points||0), progress:Number(progress||0),
+    clientTimestamp:new Date().toISOString()
+  };
+  fetch(GOOGLE_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(()=>{});
+}
+function trackFeedback(fbid,correct,points){
+  const fb=$(fbid); if(!fb) return;
+  const sec=sectionFromId(fbid), title=activityTitleFromFeedback(fb);
+  markComplete(sec,fbid,title,correct?'Correct':'Completed',points||0);
+}
+
+restoreStudent();
+resetTea();resetPDLC();renderStruct();
+
+
+
+</script>
+</body></html>
