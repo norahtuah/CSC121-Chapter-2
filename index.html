@@ -236,7 +236,17 @@ function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function clickable(pool,ans,items){$(pool).innerHTML='';$(ans).innerHTML='';shuffle(items).forEach(x=>{let d=document.createElement('div');d.className='step';d.textContent=x;d.onclick=()=>{$(ans).appendChild(d);};$(pool).appendChild(d)})}
 const tea=['Put a teabag into a cup','Pour boiled water into the cup','Add sugar and milk','Stir'];
 function resetTea(){clickable('teaPool','teaAns',tea);$('teaFb').textContent=''}
-function checkTea(){let a=[...$('teaAns').children].map(x=>x.textContent);let ok=JSON.stringify(a)===JSON.stringify(tea);$('teaFb').innerHTML=ok?'<span class="ok">Correct — clear order matters in an algorithm. +2</span>':'<span class="badtext">Not yet. Think about what must happen first.</span>';if(ok&&!$('teaFb').dataset.done){add(2);$('teaFb').dataset.done=1;trackFeedback('teaFb',true,2)}}
+function checkTea(){
+ const a=[...$('teaAns').children].map(x=>x.textContent);
+ const complete=a.length===tea.length && new Set(a).size===tea.length && a.every(x=>tea.includes(x));
+ const teaFirst=a[0]==='Put a teabag into a cup';
+ const stirLast=a[a.length-1]==='Stir';
+ const ok=complete && teaFirst && stirLast;
+ $('teaFb').innerHTML=ok
+   ? '<span class="ok">Correct! Sugar and milk may be added before or after hot water. The teabag is placed first and the ingredients are stirred last. +2</span>'
+   : '<span class="badtext">Try again. Use all four steps: place the teabag first and stir last. Hot water and sugar/milk can be added in either order.</span>';
+ if(ok&&!$('teaFb').dataset.done){add(2);$('teaFb').dataset.done=1;trackFeedback('teaFb',true,2)}
+}
 const pdlc=['Problem Analysis','Algorithm Design','Algorithm Implementation','Program Testing & Debugging','Program Maintenance & Documentation'];
 function resetPDLC(){clickable('pdlcPool','pdlcAns',pdlc);$('pdlcFb').textContent=''}
 function checkPDLC(){let a=[...$('pdlcAns').children].map(x=>x.textContent);let ok=JSON.stringify(a)===JSON.stringify(pdlc);$('pdlcFb').innerHTML=ok?'<span class="ok">Correct PDLC sequence. +3</span>':'<span class="badtext">Try again: understand the problem before designing and implementing.</span>';if(ok&&!$('pdlcFb').dataset.done){add(3);$('pdlcFb').dataset.done=1;trackFeedback('pdlcFb',true,3)}}
